@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>선거제도 시뮬레이터</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#0F1E3C;--blue:#2563EB;--blue-light:#DBEAFE;--teal:#0D9488;--teal-light:#CCFBF1;--surface:#F0F3FA;--surface2:#EEF1F8;--border:#DDE2EE;--text:#0F1E3C;--text2:#4B5673;--text3:#8892AA;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--surface);color:var(--text);font-size:14px;line-height:1.6;min-height:100vh;}
+.hidden{display:none!important;}
+.btn{cursor:pointer;font-family:'Noto Sans KR',sans-serif;border:1px solid var(--border);border-radius:10px;background:#fff;color:var(--text);padding:9px 18px;font-size:13px;transition:all .15s;display:inline-flex;align-items:center;justify-content:center;gap:6px;}
+.btn:hover{background:var(--surface2);}
+.btn:active{transform:scale(.97);}
+.btn-primary{background:var(--navy);color:#fff;border-color:var(--navy);}
+.btn-primary:hover{background:#1B2D5B;}
+.btn-blue{background:var(--blue);color:#fff;border-color:var(--blue);}
+.btn-blue:hover{background:#1D4ED8;}
+.btn-full{width:100%;}
+.btn-lg{padding:13px 26px;font-size:15px;font-weight:700;}
+.card{background:#fff;border:1px solid var(--border);border-radius:16px;padding:20px 24px;margin-bottom:14px;}
+.input{width:100%;padding:10px 13px;font-family:'Noto Sans KR',sans-serif;font-size:13px;border:1px solid var(--border);border-radius:10px;background:#fff;color:var(--text);outline:none;}
+.input:focus{border-color:var(--blue);}
+.textarea{width:100%;padding:10px 13px;font-family:'Noto Sans KR',sans-serif;font-size:12px;border:1px solid var(--border);border-radius:10px;background:#fff;color:var(--text);outline:none;resize:vertical;min-height:64px;}
+.textarea:focus{border-color:var(--blue);}
+.label{font-size:11px;font-weight:700;color:var(--text2);margin-bottom:5px;display:block;letter-spacing:.04em;}
+/* header */
+.hdr{background:var(--navy);color:#fff;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:99;}
+.hdr-left{display:flex;align-items:center;gap:10px;}
+.hdr-icon{width:32px;height:32px;background:var(--blue);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;}
+.hdr-title{font-size:15px;font-weight:700;}
+.hdr-sub{font-size:11px;color:#8899BB;margin-top:1px;}
+.badge{font-size:11px;padding:3px 11px;border-radius:20px;font-weight:700;}
+.badge-t{background:var(--blue);color:#fff;}
+.badge-s{background:var(--teal);color:#fff;}
+/* landing */
+.center-wrap{min-height:calc(100vh - 60px);display:flex;align-items:center;justify-content:center;padding:24px;}
+.landing-box{max-width:380px;width:100%;text-align:center;}
+.big-emoji{font-size:52px;margin-bottom:16px;}
+.landing-title{font-size:26px;font-weight:900;margin-bottom:8px;line-height:1.2;}
+.landing-sub{font-size:13px;color:var(--text2);margin-bottom:28px;line-height:1.8;}
+.btns-col{display:flex;flex-direction:column;gap:10px;}
+.pw-box{display:flex;flex-direction:column;gap:8px;margin-top:4px;}
+.pw-err{font-size:12px;color:#DC2626;margin-top:2px;}
+.sep{display:flex;align-items:center;gap:10px;margin:4px 0;}
+.sep-line{flex:1;height:1px;background:var(--border);}
+.sep-txt{font-size:12px;color:var(--text3);}
+/* setup */
+.page{max-width:760px;margin:0 auto;padding:28px 20px;}
+.page-title{font-size:20px;font-weight:900;margin-bottom:4px;}
+.page-sub{font-size:13px;color:var(--text2);margin-bottom:22px;}
+.form-2col{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;}
+.fgrp{display:flex;flex-direction:column;gap:5px;}
+.radio-row{display:flex;gap:10px;margin-bottom:14px;}
+.rc{flex:1;border:1px solid var(--border);border-radius:10px;padding:12px 14px;cursor:pointer;transition:all .15s;}
+.rc.sel{border-color:var(--blue);background:var(--blue-light);}
+.rc-title{font-size:13px;font-weight:700;}
+.rc-sub{font-size:11px;color:var(--text3);margin-top:2px;}
+.cand-item{border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;}
+.cand-hdr{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.dot{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;flex-shrink:0;}
+/* dash */
+.code-box{background:var(--navy);border-radius:16px;padding:18px 22px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:16px;}
+.code-lbl{font-size:11px;color:#8899BB;margin-bottom:4px;}
+.code-val{font-size:28px;font-weight:900;font-family:'DM Mono',monospace;letter-spacing:.2em;color:#60A5FA;}
+.stat-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px;}
+.stat-c{background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px 18px;}
+.stat-n{font-size:28px;font-weight:900;font-family:'DM Mono',monospace;}
+.stat-l{font-size:12px;color:var(--text2);margin-top:2px;}
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px;}
+.chip{width:36px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-family:'DM Mono',monospace;font-weight:600;}
+.chip.done{background:#A7F3D0;color:#065F46;}
+.chip.wait{background:var(--surface2);color:var(--text3);}
+.prog{height:7px;background:var(--surface2);border-radius:4px;overflow:hidden;margin-top:8px;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--teal));border-radius:4px;transition:width .4s;}
+.alert{padding:10px 14px;border-radius:10px;font-size:12px;margin-bottom:10px;}
+.alert-warn{background:#FEF3C7;color:#92400E;}
+.alert-info{background:var(--blue-light);color:#1E40AF;}
+/* student */
+.stu-wrap{max-width:500px;margin:0 auto;padding:22px 16px;}
+.voter-badge{display:inline-flex;align-items:center;gap:8px;background:var(--navy);color:#fff;padding:8px 16px;border-radius:30px;font-family:'DM Mono',monospace;font-size:14px;margin-bottom:16px;}
+.cv-card{border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:10px;transition:all .2s;}
+.cv-card.ranked{border-color:var(--blue);background:var(--blue-light);}
+.cv-hdr{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+.cv-name{font-size:14px;font-weight:700;}
+.cv-pledge{font-size:12px;color:var(--text2);line-height:1.7;white-space:pre-wrap;}
+.rank-btns{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;}
+.rb{width:34px;height:34px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);font-size:13px;font-family:'DM Mono',monospace;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.rb:hover:not(.taken){border-color:var(--blue);color:var(--blue);}
+.rb.chosen{background:var(--blue);color:#fff;border-color:var(--blue);}
+.rb.taken{opacity:.3;cursor:not-allowed;}
+.prev-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
+.prev-chip{display:flex;align-items:center;gap:5px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:4px 10px;font-size:11px;}
+.prev-rank{font-family:'DM Mono',monospace;font-weight:700;color:var(--blue);}
+/* results */
+.res-wrap{max-width:860px;margin:0 auto;padding:28px 20px;}
+.stabs{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:20px;}
+.stab{padding:7px 16px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:#fff;color:var(--text2);transition:all .15s;}
+.stab.active{background:var(--navy);color:#fff;border-color:var(--navy);}
+.stab.done{border-color:var(--blue);color:var(--blue);}
+.stab:disabled{opacity:.4;cursor:not-allowed;}
+.hero{background:var(--navy);border-radius:16px;padding:26px;margin-bottom:16px;text-align:center;}
+.hero-lbl{font-size:11px;color:#8899BB;letter-spacing:.1em;margin-bottom:8px;}
+.hero-name{font-size:30px;font-weight:900;margin-bottom:4px;}
+.hero-sub{font-size:13px;color:#8899BB;}
+.hero-multi{display:flex;justify-content:center;gap:20px;flex-wrap:wrap;}
+.bars-card{background:#fff;border:1px solid var(--border);border-radius:16px;padding:18px 22px;margin-bottom:14px;}
+.bars-title{font-size:13px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.bar-row{display:flex;align-items:center;gap:9px;margin-bottom:8px;}
+.bar-pill{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:700;flex-shrink:0;}
+.bar-nm{font-size:11px;color:var(--text2);min-width:64px;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.bar-track{flex:1;height:11px;background:var(--surface2);border-radius:6px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:6px;transition:width .6s;}
+.bar-pct{font-family:'DM Mono',monospace;font-size:11px;color:var(--text2);min-width:90px;text-align:right;}
+.el-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;margin-left:4px;}
+.insight{background:var(--blue-light);border:1px solid #BFDBFE;border-radius:10px;padding:14px 18px;font-size:12px;color:#1E3A5F;line-height:1.9;margin-top:12px;}
+.insight strong{color:#1D4ED8;}
+.next-row{display:flex;justify-content:center;margin-top:22px;}
+.seat-row{display:flex;gap:8px;margin-bottom:16px;}
+.seat-btn{padding:7px 18px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:#fff;color:var(--text2);transition:all .15s;}
+.seat-btn.active{background:var(--blue);color:#fff;border-color:var(--blue);}
+.irv-log{background:var(--surface);border-radius:10px;padding:12px 14px;margin-top:10px;}
+.irv-rd{font-size:11px;color:var(--text2);padding:4px 0;border-bottom:1px solid var(--border);line-height:1.6;}
+.irv-rd:last-child{border-bottom:none;}
+.tag{font-size:10px;font-weight:700;padding:2px 9px;border-radius:10px;}
+.divider{height:1px;background:var(--surface2);margin:14px 0;}
+.finish{text-align:center;padding:22px;background:#fff;border-radius:16px;border:1px solid var(--border);margin-top:16px;}
+@media(max-width:600px){
+  .form-2col{grid-template-columns:1fr;}
+  .code-box{flex-direction:column;text-align:center;}
+  .hero-name{font-size:22px;}
+}
+</style>
+</head>
+<body>
+
+<!-- 헤더 -->
+<div class="hdr" id="hdr">
+  <div class="hdr-left">
+    <div class="hdr-icon">🗳</div>
+    <div>
+      <div class="hdr-title">선거제도 시뮬레이터</div>
+      <div class="hdr-sub" id="hdr-sub">민주주의 선거교실</div>
+    </div>
+  </div>
+  <div id="hdr-right"></div>
+</div>
+
+<!-- 랜딩 -->
+<div id="s-landing">
+<div class="center-wrap"><div class="landing-box">
+  <div class="big-emoji">🗳️</div>
+  <div class="landing-title">교실 속 모의 선거</div>
+  <div class="landing-sub">공약 분석 · 선호 투표<br>소선거구 · 중선거구 · 결선 · 선호투표제</div>
+  <div class="btns-col">
+    <button class="btn btn-primary btn-lg" onclick="togglePw()">👩‍🏫 교사 모드로 시작</button>
+    <div id="pw-box" class="pw-box hidden">
+      <input class="input" type="password" id="pw-inp" placeholder="비밀번호 (기본: teacher1234)" onkeydown="if(event.key==='Enter')checkPw()">
+      <div id="pw-err" class="pw-err hidden">비밀번호가 틀렸습니다.</div>
+      <button class="btn btn-blue btn-full" onclick="checkPw()">확인</button>
+    </div>
+    <div class="sep"><div class="sep-line"></div><span class="sep-txt">또는</span><div class="sep-line"></div></div>
+    <button class="btn btn-lg" onclick="goStudentMode()">🙋 학생 투표 (테스트)</button>
+  </div>
+</div></div>
+</div>
+
+<!-- 교사 설정 -->
+<div id="s-setup" class="hidden">
+<div class="page">
+  <div class="page-title">수업 설정</div>
+  <div class="page-sub">후보자와 유권자 정보를 입력하고 수업을 시작하세요.</div>
+  <div class="card">
+    <div class="form-2col">
+      <div class="fgrp">
+        <span class="label">유권자 수 (5~100)</span>
+        <input class="input" type="number" id="s-voters" value="22" min="5" max="100" style="font-family:'DM Mono',monospace;font-weight:500;">
+      </div>
+      <div class="fgrp">
+        <span class="label">후보 수 (2~8)</span>
+        <input class="input" type="number" id="s-cands" value="5" min="2" max="8" style="font-family:'DM Mono',monospace;font-weight:500;" oninput="buildCandSetup(+this.value)">
+      </div>
+    </div>
+    <span class="label">선거구 유형</span>
+    <div class="radio-row">
+      <div class="rc sel" id="rc-single" onclick="selDist('single')">
+        <div class="rc-title">소선거구제 중심</div>
+        <div class="rc-sub">1명 당선 후 다른 제도 비교</div>
+      </div>
+      <div class="rc" id="rc-multi" onclick="selDist('multi')">
+        <div class="rc-title">중선거구제 포함</div>
+        <div class="rc-sub">2명·3명 당선 시나리오</div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <span class="label" style="margin-bottom:12px;">후보자 이름 & 공약</span>
+    <div id="cand-list"></div>
+  </div>
+  <button class="btn btn-primary btn-full btn-lg" onclick="startSession()">수업 시작 →</button>
+</div>
+</div>
+
+<!-- 교사 대시보드 -->
+<div id="s-dash" class="hidden">
+<div class="page">
+  <div class="code-box">
+    <div>
+      <div class="code-lbl">📋 수업 코드 (학생에게 공유)</div>
+      <div class="code-val" id="d-code">——</div>
+    </div>
+    <button class="btn" style="background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);color:#fff;font-size:12px;" onclick="copyLink()">🔗 링크 복사</button>
+  </div>
+  <div class="stat-3">
+    <div class="stat-c"><div class="stat-n" id="d-done">0</div><div class="stat-l">투표 완료</div></div>
+    <div class="stat-c"><div class="stat-n" id="d-left">0</div><div class="stat-l">대기 중</div></div>
+    <div class="stat-c"><div class="stat-n" id="d-pct">0%</div><div class="stat-l">참여율</div></div>
+  </div>
+  <div class="card">
+    <span class="label">유권자 현황</span>
+    <div class="prog"><div class="prog-fill" id="d-prog" style="width:0%"></div></div>
+    <div class="chips" id="d-chips"></div>
+  </div>
+  <div class="card">
+    <span class="label">등록 후보</span>
+    <div id="d-cands" style="display:flex;gap:7px;flex-wrap:wrap;margin-top:8px;"></div>
+  </div>
+  <div id="d-warn" class="alert alert-warn">아직 투표한 학생이 없습니다.</div>
+  <button class="btn btn-primary btn-full btn-lg hidden" id="d-reveal" onclick="revealResults()">결과 공개하기 →</button>
+  <button class="btn btn-full" style="margin-top:10px;color:var(--text3);" onclick="confirmReset()">세션 초기화</button>
+</div>
+</div>
+
+<!-- 학생 투표 -->
+<div id="s-student" class="hidden">
+<div class="stu-wrap">
+  <div style="text-align:center;margin-bottom:8px;">
+    <div class="voter-badge" id="stu-badge">유권자 번호 —</div>
+  </div>
+  <p style="font-size:12px;color:var(--text2);text-align:center;margin-bottom:16px;">각 후보에 1(가장 선호)~N(가장 비선호) 순위를 선택하세요. 중복 불가.</p>
+  <div id="stu-cands"></div>
+  <div id="stu-submit"></div>
+</div>
+</div>
+
+<!-- 투표 완료 -->
+<div id="s-done" class="hidden">
+<div class="center-wrap"><div style="text-align:center;max-width:340px;">
+  <div style="font-size:52px;margin-bottom:16px;">✅</div>
+  <div style="font-size:20px;font-weight:900;margin-bottom:8px;">투표 완료!</div>
+  <div style="font-size:13px;color:var(--text2);line-height:1.9;">소중한 한 표를 행사했습니다.<br>선생님이 결과를 공개하면 함께 분석해보세요.</div>
+  <div style="margin-top:22px;padding:16px 22px;background:var(--surface2);border-radius:14px;display:inline-block;">
+    <div style="font-size:11px;color:var(--text3);">내 유권자 번호</div>
+    <div style="font-family:'DM Mono',monospace;font-size:20px;font-weight:700;margin-top:4px;" id="done-id">—</div>
+  </div>
+  <div style="margin-top:16px;">
+    <button class="btn btn-full" onclick="goBack()">← 다른 학생으로 다시 투표 (테스트용)</button>
+  </div>
+</div></div>
+</div>
+
+<!-- 결과 -->
+<div id="s-results" class="hidden">
+<div class="res-wrap">
+  <div style="margin-bottom:20px;">
+    <div style="font-size:20px;font-weight:900;color:var(--navy);margin-bottom:2px;">선거 결과 분석</div>
+    <div style="font-size:13px;color:var(--text2);" id="res-sub">—</div>
+  </div>
+  <div class="stabs" id="stabs"></div>
+  <div id="res-content"></div>
+</div>
+</div>
+
+<script>
+// ── 상수 ──
+const PW = 'teacher1234';
+const COLORS = ['#1D4ED8','#0F766E','#B45309','#6D28D9','#B91C1C','#15803D','#BE185D','#4B5563'];
+const LIGHTS  = ['#DBEAFE','#CCFBF1','#FEF3C7','#EDE9FE','#FEE2E2','#DCFCE7','#FCE7F3','#F3F4F6'];
+const CNAMES  = ['A','B','C','D','E','F','G','H'];
+
+// ── 상태 ──
+let session = null;   // {nVoters,nCands,districtType,candNames,pledges,voterIds,votes,phase}
+let myId    = null;
+let myRanks = {};
+let stage   = 0;
+let mSeats  = 2;
+
+// ── 화면 전환 ──
+function go(id) {
+  ['landing','setup','dash','student','done','results'].forEach(s =>
+    document.getElementById('s-'+s).classList.add('hidden'));
+  document.getElementById('s-'+id).classList.remove('hidden');
+}
+function setHdr(sub, mode) {
+  document.getElementById('hdr-sub').textContent = sub || '민주주의 선거교실';
+  const r = document.getElementById('hdr-right');
+  r.innerHTML = mode === 'teacher'
+    ? `<div style="display:flex;gap:8px;align-items:center;"><span class="badge badge-t">교사 모드</span><button class="btn" style="color:#8899BB;border-color:rgba(255,255,255,.2);font-size:11px;padding:5px 10px;" onclick="confirmReset()">초기화</button></div>`
+    : mode === 'student'
+    ? `<span class="badge badge-s">학생 모드</span>`
+    : mode === 'results'
+    ? `<div style="display:flex;gap:8px;align-items:center;"><span class="badge badge-t">교사 모드</span><button class="btn" style="color:#8899BB;border-color:rgba(255,255,255,.2);font-size:11px;padding:5px 10px;" onclick="go('dash');setHdr('교사 대시보드','teacher')">대시보드</button></div>`
+    : '';
+}
+
+// ── 랜딩 ──
+function togglePw() { document.getElementById('pw-box').classList.toggle('hidden'); }
+function checkPw() {
+  if (document.getElementById('pw-inp').value === PW) {
+    document.getElementById('pw-err').classList.add('hidden');
+    buildCandSetup(5);
+    go('setup'); setHdr('수업 설정','teacher');
+  } else {
+    document.getElementById('pw-err').classList.remove('hidden');
+  }
+}
+function goStudentMode() {
+  if (!session) {
+    // 데모 세션 자동 생성
+    const ids = Array.from({length:22}, (_,i) => String(i+1).padStart(3,'0')).sort(() => Math.random()-.5);
+    session = {
+      nVoters:22, nCands:5, districtType:'single',
+      candNames:['이혜정','박준서','김민아','최동현','오지윤'],
+      pledges:['기본소득 월 50만원 지급','대중교통 무료화','청년 주거 지원 확대','환경세 도입 및 녹지 확충','교육예산 2배 확대'],
+      voterIds:ids, votes:{}, phase:'voting', code:'DEMO'
+    };
+  }
+  pickVoter();
+}
+function goBack() { if(session) pickVoter(); else go('landing'); }
+
+// ── 교사 설정 ──
+function selDist(t) {
+  ['single','multi'].forEach(x => document.getElementById('rc-'+x).classList.toggle('sel', x===t));
+}
+function getDist() { return document.getElementById('rc-multi').classList.contains('sel') ? 'multi' : 'single'; }
+function buildCandSetup(n) {
+  n = Math.min(8, Math.max(2, n||5));
+  const defs = ['이혜정','박준서','김민아','최동현','오지윤','','',''];
+  const el = document.getElementById('cand-list');
+  el.innerHTML = '';
+  for (let i = 0; i < n; i++) {
+    const d = document.createElement('div');
+    d.className = 'cand-item';
+    d.innerHTML = `<div class="cand-hdr">
+      <div class="dot" style="background:${COLORS[i]}">${CNAMES[i]}</div>
+      <input class="input" id="cn-${i}" placeholder="후보 ${CNAMES[i]} 이름" value="${defs[i]||''}">
+    </div>
+    <textarea class="textarea" id="cp-${i}" placeholder="후보 ${CNAMES[i]}의 주요 공약"></textarea>`;
+    el.appendChild(d);
+  }
+}
+
+function genCode() {
+  return Array.from({length:4}, () => 'ABCDEFGHJKLMNPQRSTUVWXYZ'[Math.floor(Math.random()*24)]).join('');
+}
+
+function startSession() {
+  const nV = Math.min(100, Math.max(5, +document.getElementById('s-voters').value || 22));
+  const nC = Math.min(8,  Math.max(2, +document.getElementById('s-cands').value  || 5));
+  const names = [], pledges = [];
+  for (let i = 0; i < nC; i++) {
+    names.push(document.getElementById('cn-'+i)?.value || '');
+    pledges.push(document.getElementById('cp-'+i)?.value || '');
+  }
+  const ids = Array.from({length:nV}, (_,i) => String(i+1).padStart(3,'0')).sort(() => Math.random()-.5);
+  session = { nVoters:nV, nCands:nC, districtType:getDist(), candNames:names, pledges, voterIds:ids, votes:{}, phase:'voting', code:genCode() };
+  buildDash();
+  go('dash'); setHdr('교사 대시보드','teacher');
+}
+
+// ── 대시보드 ──
+function buildDash() {
+  const s = session;
+  const nDone = Object.keys(s.votes).length;
+  const nV = s.nVoters, nC = s.nCands;
+  document.getElementById('d-code').textContent = s.code;
+  document.getElementById('d-done').textContent = nDone;
+  document.getElementById('d-left').textContent = nV - nDone;
+  document.getElementById('d-pct').textContent  = pct(nDone,nV) + '%';
+  document.getElementById('d-prog').style.width = pct(nDone,nV) + '%';
+  document.getElementById('d-chips').innerHTML  = s.voterIds.map(id =>
+    `<div class="chip ${s.votes[id]?'done':'wait'}">${id}</div>`).join('');
+  document.getElementById('d-cands').innerHTML  = Array.from({length:nC},(_,i) =>
+    `<div style="display:flex;align-items:center;gap:5px;background:${LIGHTS[i]};border-radius:20px;padding:3px 11px;">
+      <div style="width:14px;height:14px;border-radius:50%;background:${COLORS[i]};"></div>
+      <span style="font-size:12px;font-weight:700;color:${COLORS[i]};">${CNAMES[i]}${s.candNames[i]?' ('+s.candNames[i]+')':''}</span>
+    </div>`).join('');
+  const hasVotes = nDone > 0;
+  document.getElementById('d-warn').classList.toggle('hidden', hasVotes);
+  document.getElementById('d-reveal').classList.toggle('hidden', !hasVotes);
+}
+
+function copyLink() {
+  const txt = window.location.href + ' (수업코드: ' + session.code + ')';
+  navigator.clipboard?.writeText(txt).then(() => alert('복사됐습니다!\n' + txt)).catch(() => alert('수업코드: ' + session.code));
+}
+
+function revealResults() {
+  session.phase = 'results';
+  stage = 0; mSeats = 2;
+  buildResults();
+  go('results'); setHdr('선거 결과 분석','results');
+}
+
+function confirmReset() {
+  if (confirm('세션을 초기화하면 투표 데이터가 모두 삭제됩니다. 계속하시겠습니까?')) {
+    session = null; myId = null; myRanks = {};
+    setHdr('',''); go('landing');
+  }
+}
+
+// ── 학생 투표 ──
+function pickVoter() {
+  const used  = Object.keys(session.votes);
+  const avail = session.voterIds.filter(id => !used.includes(id));
+  if (!avail.length) { alert('모든 유권자가 투표를 완료했습니다.'); return; }
+  myId = avail[Math.floor(Math.random() * avail.length)];
+  myRanks = {};
+  buildStudentUI();
+  go('student'); setHdr('모의 투표 중','student');
+}
+
+function cLabel(i) {
+  const nm = session?.candNames[i];
+  return `${CNAMES[i]}${nm?' ('+nm+')':''}`;
+}
+
+function buildStudentUI() {
+  const nC = session.nCands;
+  document.getElementById('stu-badge').textContent = '유권자 번호 ' + myId;
+  const el = document.getElementById('stu-cands');
+  el.innerHTML = '';
+  for (let i = 0; i < nC; i++) {
+    const d = document.createElement('div');
+    d.className = 'cv-card'; d.id = 'cvc-'+i;
+    d.innerHTML = `<div class="cv-hdr">
+      <div class="dot" style="background:${COLORS[i]}">${CNAMES[i]}</div>
+      <div class="cv-name">${cLabel(i)}</div>
+      <div id="rt-${i}" style="margin-left:auto;display:none;background:${COLORS[i]};color:#fff;border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700;"></div>
+    </div>
+    ${session.pledges[i] ? `<div class="cv-pledge">${session.pledges[i]}</div>` : ''}
+    <div class="rank-btns" id="rb-${i}"></div>`;
+    el.appendChild(d);
+  }
+  renderRankBtns();
+  renderSubmit();
+}
+
+function renderRankBtns() {
+  const nC = session.nCands;
+  const taken = Object.values(myRanks).filter(Boolean);
+  for (let i = 0; i < nC; i++) {
+    const rb = document.getElementById('rb-'+i);
+    if (!rb) continue;
+    rb.innerHTML = '';
+    for (let r = 1; r <= nC; r++) {
+      const chosen = myRanks[i] === r;
+      const takenByOther = taken.includes(r) && !chosen;
+      const b = document.createElement('button');
+      b.className = 'rb' + (chosen?' chosen':takenByOther?' taken':'');
+      b.textContent = r;
+      b.disabled = takenByOther && !chosen;
+      b.onclick = () => {
+        if (takenByOther && !chosen) return;
+        if (chosen) delete myRanks[i]; else myRanks[i] = r;
+        for (let j = 0; j < nC; j++) {
+          document.getElementById('cvc-'+j)?.classList.toggle('ranked', !!myRanks[j]);
+          const t = document.getElementById('rt-'+j);
+          if (t) { t.style.display = myRanks[j]?'inline-block':'none'; t.textContent = myRanks[j]?myRanks[j]+'순위':''; }
+        }
+        renderRankBtns(); renderSubmit();
+      };
+      rb.appendChild(b);
+    }
+  }
+}
+
+function renderSubmit() {
+  const nC = session.nCands;
+  const filled = Object.values(myRanks).filter(Boolean).length;
+  const el = document.getElementById('stu-submit');
+  if (filled < nC) {
+    el.innerHTML = `<div class="alert alert-info">${nC-filled}명의 순위가 남았습니다.</div>`;
+    return;
+  }
+  const prev = Array.from({length:nC},(_,i)=>i).sort((a,b)=>myRanks[a]-myRanks[b])
+    .map(i=>`<div class="prev-chip"><span class="prev-rank">${myRanks[i]}순위</span>
+      <div class="dot" style="background:${COLORS[i]};width:18px;height:18px;font-size:9px;">${CNAMES[i]}</div></div>`).join('');
+  el.innerHTML = `<div style="font-size:12px;font-weight:600;margin-bottom:6px;color:var(--text2);">내 선호 순위 확인</div>
+    <div class="prev-row">${prev}</div>
+    <button class="btn btn-primary btn-full btn-lg" onclick="submitVote()">투표 완료 →</button>`;
+}
+
+function submitVote() {
+  const nC = session.nCands;
+  const row = Array.from({length:nC}, (_,i) => myRanks[i] || i+1);
+  session.votes[myId] = row;
+  document.getElementById('done-id').textContent = myId;
+  buildDash();
+  go('done'); setHdr('투표 완료','student');
+}
+
+// ── 선거 계산 ──
+function pct(v,t){ return t===0?0:Math.round(v/t*100); }
+function firstChoice(votes,nC){ const c=Array(nC).fill(0); votes.forEach(r=>{const m=Math.min(...r);c[r.indexOf(m)]++;}); return c; }
+function calcPlur(votes,nC){ const c=firstChoice(votes,nC); return {winner:[c.indexOf(Math.max(...c))],counts:c}; }
+function calcBlock(votes,nC,nS){ const c=firstChoice(votes,nC); const el=[...c].map((v,i)=>({i,v})).sort((a,b)=>b.v-a.v).slice(0,nS).map(x=>x.i); return {winner:el,counts:c}; }
+function calcRunoff(votes,nC){
+  const c=firstChoice(votes,nC);
+  const top2=[...c].map((v,i)=>({i,v})).sort((a,b)=>b.v-a.v).slice(0,2).map(x=>x.i);
+  const r2=[0,0];
+  votes.forEach(row=>{ const p=row.map((v,i)=>({i,v})).sort((a,b)=>a.v-b.v).map(x=>x.i).filter(i=>top2.includes(i)); if(p[0]===top2[0])r2[0]++;else r2[1]++; });
+  return {winner:[r2[0]>=r2[1]?top2[0]:top2[1]],counts:c,r2,top2};
+}
+function calcIRV(votes,nC){
+  let rem=[...Array(nC).keys()]; const rounds=[]; let winner=-1;
+  while(rem.length>1){
+    const c=Array(nC).fill(0);
+    votes.forEach(r=>{ const b=rem.reduce((x,i)=>r[i]<r[x]?i:x,rem[0]); c[b]++; });
+    const tot=rem.map(i=>c[i]).reduce((a,b)=>a+b,0);
+    const maj=rem.find(i=>c[i]>tot/2);
+    rounds.push({c:[...c],rem:[...rem]});
+    if(maj!==undefined){winner=maj;break;}
+    const minV=Math.min(...rem.map(i=>c[i]));
+    rem=rem.filter(i=>i!==rem.find(x=>c[x]===minV));
+  }
+  if(winner===-1)winner=rem[0];
+  return {winner:[winner],counts:firstChoice(votes,nC),rounds};
+}
+
+// ── 결과 렌더 ──
+function buildResults() {
+  const votes = Object.values(session.votes);
+  const nV=votes.length, nC=session.nCands;
+  document.getElementById('res-sub').textContent=`총 ${nV}명 투표 · ${nC}명 후보`;
+  const rP=calcPlur(votes,nC), rR=calcRunoff(votes,nC), rI=calcIRV(votes,nC);
+  const rB2=calcBlock(votes,nC,2), rB3=calcBlock(votes,nC,3);
+  const stages=['소선거구제','중선거구제','결선투표제','선호투표제(IRV)'];
+  document.getElementById('stabs').innerHTML=stages.map((s,i)=>
+    `<button class="stab${i===stage?' active':i<stage?' done':''}" onclick="${i<=stage?'setStage('+i+')':''}" ${i>stage?'disabled':''}>${i<stage?'✓ ':''}${s}</button>`
+  ).join('');
+  const el=document.getElementById('res-content');
+  el.innerHTML='';
+  if(stage===0) rS0(rP,nV,nC,el);
+  if(stage===1) rS1(rB2,rB3,rP,nV,nC,el);
+  if(stage===2) rS2(rR,rP,nV,nC,el);
+  if(stage===3) rS3(rI,rP,rR,nV,nC,el);
+}
+function setStage(i){if(i<=stage){stage=i;buildResults();}}
+function nextStage(){stage++;buildResults();}
+function setSeats(n){mSeats=n;buildResults();}
+
+function heroH(r,nV){
+  if(r.winner.length===1){const w=r.winner[0];return`<div class="hero"><div class="hero-lbl">🏆 당선자</div><div class="hero-name" style="color:${COLORS[w]}">${cLabel(w)}</div><div class="hero-sub">${r.counts[w]}표 · ${pct(r.counts[w],nV)}%</div></div>`;}
+  return`<div class="hero"><div class="hero-lbl">🏆 당선자 (${r.winner.length}명)</div><div class="hero-multi">${r.winner.map(w=>`<div><div style="font-size:22px;font-weight:900;color:${COLORS[w]}">${cLabel(w)}</div><div style="font-size:12px;color:#8899BB;margin-top:2px">${pct(r.counts[w],nV)}%</div></div>`).join('')}</div></div>`;
+}
+function barsH(counts,elected,nV){
+  const mx=Math.max(...counts,1);
+  return counts.map((c,i)=>{const isE=elected.includes(i);const w=Math.round(c/mx*100);
+    return`<div class="bar-row"><div class="bar-pill" style="background:${COLORS[i]}">${CNAMES[i]}</div><div class="bar-nm">${session.candNames[i]||''}</div><div class="bar-track"><div class="bar-fill" style="width:${w}%;background:${COLORS[i]};opacity:${isE?1:.25}"></div></div><div class="bar-pct">${c}표 ${pct(c,nV)}%${isE?`<span class="el-badge" style="background:${LIGHTS[i]};color:${COLORS[i]}">당선</span>`:''}</div></div>`;
+  }).join('');
+}
+function rS0(r,nV,nC,el){
+  const over=pct(r.counts[r.winner[0]],nV)>=50;
+  el.innerHTML=heroH(r,nV)+`<div class="bars-card"><div class="bars-title">소선거구 다수대표제 <span class="tag" style="background:${LIGHTS[0]};color:${COLORS[0]}">1인 당선</span></div>${barsH(r.counts,r.winner,nV)}</div><div class="insight"><strong>${cLabel(r.winner[0])}</strong>이(가) <strong>${pct(r.counts[r.winner[0]],nV)}%</strong>를 득표해 당선되었습니다.${!over?` 과반에 미치지 못해 <strong>${100-pct(r.counts[r.winner[0]],nV)}%</strong>는 이 후보를 지지하지 않았습니다. 대표성에 대한 토론을 시작해보세요.`:' 과반 이상의 지지를 받아 강력한 대표성을 가집니다.'}</div><div class="next-row"><button class="btn btn-blue btn-lg" onclick="nextStage()">중선거구제라면? →</button></div>`;
+}
+function rS1(rB2,rB3,rP,nV,nC,el){
+  const r=mSeats===2?rB2:rB3;
+  el.innerHTML=`<div class="seat-row"><button class="seat-btn${mSeats===2?' active':''}" onclick="setSeats(2)">2인 당선</button><button class="seat-btn${mSeats===3?' active':''}" onclick="setSeats(3)">3인 당선</button></div>`+
+  heroH(r,nV)+`<div class="bars-card"><div class="bars-title">중선거구제 (${mSeats}인 당선) <span class="tag" style="background:${LIGHTS[1]};color:${COLORS[1]}">${mSeats}인 당선</span></div>${barsH(r.counts,r.winner,nV)}</div><div class="insight">${mSeats}명 당선 시 <strong>${r.winner.map(i=>cLabel(i)).join(', ')}</strong>이(가) 당선됩니다. 소선거구(<strong>${cLabel(rP.winner[0])}</strong>)와 비교해 더 많은 유권자 의사가 반영됩니다.</div><div class="next-row"><button class="btn btn-blue btn-lg" onclick="nextStage()">결선투표제 →</button></div>`;
+}
+function rS2(r,rP,nV,nC,el){
+  const same=r.winner[0]===rP.winner[0];
+  el.innerHTML=heroH(r,nV)+`<div class="bars-card"><div class="bars-title">결선투표제 <span class="tag" style="background:${LIGHTS[2]};color:${COLORS[2]}">1·2위 재투표</span></div><div style="font-size:11px;color:var(--text3);margin-bottom:8px;">1차 투표</div>${barsH(r.counts,r.top2,nV)}<div class="divider"></div><div style="font-size:11px;color:var(--text3);margin-bottom:8px;">결선 투표 (선호 순위 기반)</div>${r.top2.map((w,k)=>`<div class="bar-row"><div class="bar-pill" style="background:${COLORS[w]}">${CNAMES[w]}</div><div class="bar-nm">${session.candNames[w]||''}</div><div class="bar-track"><div class="bar-fill" style="width:${pct(r.r2[k],nV)}%;background:${COLORS[w]}"></div></div><div class="bar-pct">${r.r2[k]}표 ${pct(r.r2[k],nV)}%${r.winner[0]===w?`<span class="el-badge" style="background:${LIGHTS[w]};color:${COLORS[w]}">당선</span>`:''}</div></div>`).join('')}</div><div class="insight">결선투표제에서 <strong>${cLabel(r.winner[0])}</strong> 당선. 소선거구(${cLabel(rP.winner[0])})와 ${same?'<strong>동일한 결과</strong>입니다.':'<strong>결과가 다릅니다!</strong> 소수 표가 결과를 바꿀 수 있음을 보여줍니다.'}</div><div class="next-row"><button class="btn btn-blue btn-lg" onclick="nextStage()">선호투표제 →</button></div>`;
+}
+function rS3(r,rP,rR,nV,nC,el){
+  const ws=new Set([rP.winner[0],rR.winner[0],r.winner[0]]);
+  const log=r.rounds.map((rd,ri)=>`<div class="irv-rd"><strong>Round ${ri+1}:</strong> ${rd.rem.map(i=>`${CNAMES[i]} ${rd.c[i]}표`).join(' · ')}</div>`).join('');
+  el.innerHTML=heroH(r,nV)+`<div class="bars-card"><div class="bars-title">선호투표제 (IRV) <span class="tag" style="background:${LIGHTS[3]};color:${COLORS[3]}">최하위 탈락 반복</span></div>${barsH(r.counts,r.winner,nV)}<div class="irv-log">${log}</div></div><div class="insight">선호투표제에서 <strong>${cLabel(r.winner[0])}</strong> 당선. ${ws.size===1?'모든 제도에서 동일한 결과가 나왔습니다.':`소선거구(${cLabel(rP.winner[0])}) · 결선(${cLabel(rR.winner[0])}) · 선호투표(${cLabel(r.winner[0])}) — <strong>${ws.size}가지 다른 결과</strong>가 나왔습니다!`}</div><div class="finish"><div style="font-size:16px;font-weight:900;margin-bottom:8px;">🎓 수업 완료!</div><div style="font-size:13px;color:var(--text2);line-height:1.9;">어떤 제도가 더 민주적일지 함께 토론해보세요.<br>선거제도는 '누가 이기냐'가 아니라 '어떤 목소리를 반영하느냐'의 문제입니다.</div></div>`;
+}
+</script>
+</body>
+</html>
